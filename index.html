@@ -18,8 +18,21 @@
     --border-mid: rgba(28,27,24,0.22);
     --accent: #8B6914;
     --accent-light: #F5EDD8;
+    --photo-bg: #EDE9E1;
     --serif: 'Cormorant Garamond', Georgia, serif;
     --sans: 'Jost', system-ui, sans-serif;
+  }
+
+  [data-theme="dark"] {
+    --cream: #141210;
+    --ink: #F0EDE6;
+    --ink-mid: #A09880;
+    --ink-light: #6B6458;
+    --border: rgba(240,237,230,0.1);
+    --border-mid: rgba(240,237,230,0.2);
+    --accent: #C9980A;
+    --accent-light: #2A2010;
+    --photo-bg: #1E1B16;
   }
 
   html { scroll-behavior: smooth; }
@@ -30,13 +43,14 @@
     color: var(--ink);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
+    transition: background 0.3s, color 0.3s;
   }
 
   /* ── HEADER ── */
   header {
     max-width: 780px;
     margin: 0 auto;
-    padding: 2.5rem 2rem 1.5rem;
+    padding: 1.25rem 1.5rem 1rem;
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
@@ -97,7 +111,7 @@
   nav {
     max-width: 780px;
     margin: 0 auto;
-    padding: 1rem 2rem;
+    padding: 0.6rem 1.5rem;
     display: flex;
     gap: 0.25rem;
     border-bottom: 0.5px solid var(--border);
@@ -126,7 +140,7 @@
   main {
     max-width: 780px;
     margin: 0 auto;
-    padding: 2.5rem 2rem;
+    padding: 1.5rem 1.5rem;
   }
 
   /* ── TODAY ── */
@@ -135,13 +149,13 @@
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--ink-light);
-    margin-bottom: 1.25rem;
+    margin-bottom: 0.75rem;
   }
 
   .photo-stage {
     width: 100%;
     aspect-ratio: 4 / 3;
-    background: #EDE9E1;
+    background: var(--photo-bg);
     border-radius: 12px;
     border: 0.5px solid var(--border);
     overflow: hidden;
@@ -200,7 +214,7 @@
   .rule {
     border: none;
     border-top: 0.5px solid var(--border);
-    margin: 2rem 0;
+    margin: 1.25rem 0;
   }
 
   /* ── STATS ── */
@@ -214,7 +228,7 @@
   .stat-tile {
     background: rgba(28,27,24,0.04);
     border-radius: 10px;
-    padding: 1rem;
+    padding: 0.65rem;
     text-align: center;
   }
 
@@ -260,7 +274,7 @@
 
   .archive-thumb {
     aspect-ratio: 1;
-    background: #EDE9E1;
+    background: var(--photo-bg);
     border-radius: 8px;
     border: 0.5px solid var(--border);
     overflow: hidden;
@@ -303,9 +317,9 @@
     background: var(--accent-light);
     border-radius: 12px;
     border: 0.5px solid rgba(139,105,20,0.2);
-    padding: 1.5rem;
+    padding: 1rem;
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
     align-items: flex-start;
   }
 
@@ -347,7 +361,7 @@
   footer {
     max-width: 780px;
     margin: 0 auto;
-    padding: 1.5rem 2rem 2.5rem;
+    padding: 1rem 1.5rem 1.5rem;
     border-top: 0.5px solid var(--border);
     display: flex;
     align-items: center;
@@ -368,6 +382,29 @@
     color: var(--ink-light);
   }
 
+  /* ── DARK MODE TOGGLE ── */
+  .theme-toggle {
+    background: none;
+    border: 0.5px solid var(--border-mid);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--ink-light);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .theme-toggle:hover {
+    color: var(--ink);
+    border-color: var(--border-mid);
+    background: rgba(128,128,128,0.08);
+  }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 500px) {
     header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
@@ -381,9 +418,11 @@
 <body>
 
 <header>
-  <div class="wordmark">Sheru <em>the dog</em></div>
-  <div class="header-meta">
-    <span class="breed-tag">Norwich Terrier</span>
+  <div>
+    <div class="wordmark">Sheru<sup style="font-size: 0.35em; vertical-align: middle; margin-left: 0.15em; opacity: 0.7;">🦁</sup> <em style="background: #1C1B18; color: #FAF8F4; padding: 0 0.18em; border-radius: 3px;">the dog</em></div>
+    <div style="font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-light); margin-top: 6px;">Norwich Terrier</div>
+  </div>
+  <div class="header-meta" style="align-self: flex-start; padding-top: 0.25rem;">
     <span class="live-tag"><span class="live-dot"></span>Updated daily</span>
   </div>
 </header>
@@ -392,6 +431,7 @@
   <a href="#today" class="nav-link active">Today</a>
   <a href="#archive" class="nav-link">Archive</a>
   <a href="#about" class="nav-link">About Sheru</a>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" style="margin-left: auto;">☀️ Light</button>
 </nav>
 
 <main>
@@ -420,7 +460,7 @@
   <div class="stats-grid">
     <div class="stat-tile">
       <span class="stat-label">Age</span>
-      <div class="stat-number">8<span class="stat-unit">wks</span></div>
+      <div class="stat-number">10<span class="stat-unit">wks</span></div>
     </div>
     <div class="stat-tile">
       <span class="stat-label">Days home</span>
@@ -472,5 +512,28 @@
   <div class="footer-right">Est. 2026</div>
 </footer>
 
+<script>
+  const toggle = document.getElementById('themeToggle');
+  const html = document.documentElement;
+
+  const saved = localStorage.getItem('sheru-theme');
+  if (saved === 'dark') {
+    html.setAttribute('data-theme', 'dark');
+    toggle.textContent = '🌙 Dark';
+  }
+
+  function toggleTheme() {
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+      html.removeAttribute('data-theme');
+      toggle.textContent = '☀️ Light';
+      localStorage.setItem('sheru-theme', 'light');
+    } else {
+      html.setAttribute('data-theme', 'dark');
+      toggle.textContent = '🌙 Dark';
+      localStorage.setItem('sheru-theme', 'dark');
+    }
+  }
+</script>
 </body>
 </html>
