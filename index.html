@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sheru · Norwich Terrier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #FAF8F4;
+    --ink: #1C1B18;
+    --ink-mid: #5A5852;
+    --ink-light: #A09C94;
+    --border: rgba(28,27,24,0.12);
+    --border-mid: rgba(28,27,24,0.22);
+    --accent: #8B6914;
+    --accent-light: #F5EDD8;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Jost', system-ui, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── HEADER ── */
+  header {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 1.5rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    border-bottom: 0.5px solid var(--border-mid);
+  }
+
+  .wordmark {
+    font-family: var(--serif);
+    font-size: clamp(36px, 6vw, 52px);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .wordmark em {
+    font-weight: 400;
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .header-meta {
+    text-align: right;
+  }
+
+  .breed-tag {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .live-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--ink-mid);
+  }
+
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4CAF7D;
+    animation: breathe 2.4s ease-in-out infinite;
+  }
+
+  @keyframes breathe {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+  }
+
+  /* ── NAV ── */
+  nav {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .nav-link {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    text-decoration: none;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 0.5px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .nav-link:hover { color: var(--ink); border-color: var(--border); }
+  .nav-link.active {
+    color: var(--ink);
+    border-color: var(--border-mid);
+    background: rgba(28,27,24,0.04);
+  }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
+  }
+
+  /* ── TODAY ── */
+  .today-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 1.25rem;
+  }
+
+  .photo-stage {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #EDE9E1;
+    border-radius: 12px;
+    border: 0.5px solid var(--border);
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .photo-stage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .photo-placeholder-inner {
+    text-align: center;
+  }
+
+  .placeholder-icon {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 0.75rem;
+    opacity: 0.2;
+  }
+
+  .placeholder-text {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--ink-light);
+  }
+
+  .caption-block {
+    margin-bottom: 0.75rem;
+  }
+
+  .caption-text {
+    font-family: var(--serif);
+    font-size: clamp(20px, 3vw, 26px);
+    font-style: italic;
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+
+  .caption-byline {
+    margin-top: 0.6rem;
+    font-size: 12px;
+    color: var(--ink-light);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── DIVIDER ── */
+  .rule {
+    border: none;
+    border-top: 0.5px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  /* ── STATS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 2rem;
+  }
+
+  .stat-tile {
+    background: rgba(28,27,24,0.04);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .stat-number {
+    font-family: var(--serif);
+    font-size: 30px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .stat-unit {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--ink-mid);
+    margin-left: 2px;
+  }
+
+  /* ── ARCHIVE STRIP ── */
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 1rem;
+  }
+
+  .archive-strip {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 2rem;
+  }
+
+  .archive-thumb {
+    aspect-ratio: 1;
+    background: #EDE9E1;
+    border-radius: 8px;
+    border: 0.5px solid var(--border);
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .archive-thumb:hover {
+    transform: scale(1.03);
+    border-color: var(--border-mid);
+  }
+
+  .archive-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .archive-thumb .thumb-day {
+    position: absolute;
+    bottom: 4px;
+    left: 5px;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    color: rgba(255,255,255,0.9);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+
+  .archive-thumb-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    opacity: 0.2;
+  }
+
+  /* ── ABOUT ── */
+  .about-card {
+    background: var(--accent-light);
+    border-radius: 12px;
+    border: 0.5px solid rgba(139,105,20,0.2);
+    padding: 1.5rem;
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+
+  .about-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(139,105,20,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    flex-shrink: 0;
+  }
+
+  .about-name {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .about-breed {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+
+  .about-desc {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink-mid);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem 2.5rem;
+    border-top: 0.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-left {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-style: italic;
+    color: var(--ink-light);
+  }
+
+  .footer-right {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 500px) {
+    header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .header-meta { text-align: left; }
+    .archive-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .archive-strip .archive-thumb:last-child { display: none; }
+    .about-card { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark">Sheru <em>the dog</em></div>
+  <div class="header-meta">
+    <span class="breed-tag">Norwich Terrier</span>
+    <span class="live-tag"><span class="live-dot"></span>Updated daily</span>
+  </div>
+</header>
+
+<nav>
+  <a href="#today" class="nav-link active">Today</a>
+  <a href="#archive" class="nav-link">Archive</a>
+  <a href="#about" class="nav-link">About Sheru</a>
+</nav>
+
+<main>
+
+  <!-- TODAY -->
+  <section id="today">
+    <div class="today-label">Tuesday, April 7, 2026 &nbsp;·&nbsp; Day 1</div>
+
+    <div class="photo-stage">
+      <!-- PHOTO: replace the placeholder div below with: <img src="your-photo.jpg" alt="Sheru today"> -->
+      <div class="photo-placeholder-inner">
+        <span class="placeholder-icon">🐾</span>
+        <div class="placeholder-text">Today's photo</div>
+      </div>
+    </div>
+
+    <div class="caption-block">
+      <div class="caption-text">"First day home. Claimed the entire couch within six minutes."</div>
+      <div class="caption-byline">Posted by Yuvraj &nbsp;·&nbsp; April 7, 2026</div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-tile">
+      <span class="stat-label">Age</span>
+      <div class="stat-number">8<span class="stat-unit">wks</span></div>
+    </div>
+    <div class="stat-tile">
+      <span class="stat-label">Days home</span>
+      <div class="stat-number">1</div>
+    </div>
+    <div class="stat-tile">
+      <span class="stat-label">Zoomies today</span>
+      <div class="stat-number">∞</div>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <!-- ARCHIVE -->
+  <section id="archive">
+    <div class="section-label">Recent days</div>
+    <div class="archive-strip">
+      <!-- ARCHIVE THUMBS: replace archive-thumb-empty divs with real images as you add days -->
+      <div class="archive-thumb archive-thumb-empty">🐶<span class="thumb-day">Day 1</span></div>
+      <div class="archive-thumb archive-thumb-empty">·</div>
+      <div class="archive-thumb archive-thumb-empty">·</div>
+      <div class="archive-thumb archive-thumb-empty">·</div>
+      <div class="archive-thumb archive-thumb-empty">·</div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="section-label">About Sheru</div>
+    <div class="about-card">
+      <div class="about-avatar">🦁</div>
+      <div>
+        <div class="about-name">Sheru</div>
+        <div class="about-breed">Norwich Terrier &nbsp;·&nbsp; Amherst, NY</div>
+        <div class="about-desc">
+          A Norwich Terrier with the confidence of a lion and the energy of a small earthquake.
+          Born in 2026. Lover of zoomies, suspicious of vacuum cleaners, and already running the household.
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-left">sheru.dog</div>
+  <div class="footer-right">Est. 2026</div>
+</footer>
+
+</body>
+</html>
