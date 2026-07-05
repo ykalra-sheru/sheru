@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Records — Sheru Kalra</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --red: #9b2335;
+    --gold: #b8860b;
+    --gold-light: #f5e6c0;
+    --cream: #faf7f2;
+    --paper: #f0ebe2;
+    --border: #c8bfb0;
+    --green: #2d6a4f;
+    --green-light: #d8f3dc;
+    --blue: #1b4f72;
+    --blue-light: #d6eaf8;
+    --gray: #6b7280;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #ffffff;
+    font-family: 'Source Sans 3', sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.5;
+    z-index: 0;
+  }
+
+  .container {
+    width: 85%;
+    max-width: 1200px;
+    min-width: 320px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 4px 4px 0 0;
+    padding: 32px 40px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--red), var(--gold), var(--red));
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+    color: var(--gold);
+  }
+
+  .header h1 span {
+    color: white;
+    display: block;
+    font-size: 0.9rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .badge {
+    background: var(--red);
+    color: white;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .header-meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    flex-wrap: wrap;
+  }
+
+  .meta-item { display: flex; flex-direction: column; gap: 3px; }
+
+  .meta-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+  }
+
+  .meta-value {
+    font-size: 0.85rem;
+    color: white;
+    font-weight: 300;
+  }
+
+  /* Sections */
+  .section {
+    background: var(--cream);
+    border: none;
+    border-top: none;
+    padding: 0;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 40px;
+    min-height: 48px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 0;
+  }
+
+  .section-title:hover { background: rgba(0,0,0,0.02); }
+
+  .section-title .chevron {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--gray);
+    transition: transform 0.2s ease;
+  }
+
+  .section-title.open .chevron { transform: rotate(180deg); }
+
+  .section-body {
+    padding: 32px 40px;
+    display: none;
+  }
+
+  .section-body.open { display: block; }
+
+  .section-title .icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+
+  .icon-vacc  { background: var(--blue-light);  color: var(--blue); }
+  .icon-para  { background: var(--green-light); color: var(--green); }
+  .icon-alert { background: #fde8e8;            color: var(--red); }
+
+  /* Vaccine list */
+  .vacc-list { display: flex; flex-direction: column; }
+
+  .vacc-row {
+    display: grid;
+    grid-template-columns: 1fr 140px;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(200,191,176,0.45);
+  }
+
+  .vacc-row:last-child { border-bottom: none; }
+
+  .vacc-left { min-width: 0; }
+
+  .vacc-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+
+  .vacc-sub {
+    font-size: 0.78rem;
+    color: var(--gray);
+    margin-top: 3px;
+  }
+
+  .vacc-right { text-align: right; }
+
+  .vacc-date {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .vacc-note {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--gray);
+    margin-top: 3px;
+  }
+
+  /* Parasite grid */
+  .para-grid {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .para-grid-head { display: contents; }
+
+  .para-grid-head > div {
+    background: var(--paper);
+    padding: 8px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .para-row { display: contents; }
+
+  .para-row > div {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(200,191,176,0.4);
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .para-row:last-child > div { border-bottom: none; }
+  .para-row:nth-child(even) > div { background: rgba(240,235,226,0.4); }
+
+  .para-date-cell {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--gray);
+    white-space: nowrap;
+  }
+
+  .para-drug { font-weight: 600; color: var(--ink); }
+
+  .para-purpose {
+    font-size: 0.72rem;
+    color: var(--gray);
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    justify-content: flex-end;
+  }
+
+  /* Alert */
+  .alert-box {
+    background: #fff8f8;
+    border: 1px solid #f5c6cb;
+    border-left: 4px solid var(--red);
+    border-radius: 3px;
+    padding: 14px 18px;
+  }
+
+  .alert-text {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: #7f1d1d;
+  }
+
+  .alert-text strong {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 3px;
+    font-size: 0.85rem;
+  }
+
+  /* Upcoming */
+  .upcoming-section {
+    background: var(--gold-light);
+    border: 1px solid #d4b896;
+    border-top: none;
+    padding: 24px 40px;
+    border-radius: 0 0 4px 4px;
+  }
+
+  .upcoming-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+
+  .upcoming-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+  .upcoming-card {
+    background: white;
+    border: 1px solid #d4b896;
+    border-radius: 3px;
+    padding: 12px 16px;
+    min-width: 160px;
+    flex: 1;
+  }
+
+  .uc-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gray);
+    margin-bottom: 4px;
+  }
+
+  .uc-name { font-weight: 600; font-size: 0.85rem; color: var(--ink); }
+
+  .uc-date {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--gold);
+    margin-top: 4px;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 24px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    color: var(--gray);
+    text-transform: uppercase;
+  }
+
+  @media print {
+    body { background: white; padding: 0; }
+    body::before { display: none; }
+    .container { width: 100%; max-width: 100%; }
+    .header { background: #1a1a2e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge { background: #9b2335 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .section { background: white; border-color: transparent; }
+    .upcoming-section { background: #f5e6c0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .upcoming-card { background: white; }
+    .section-body { display: block !important; }
+    .para-row:nth-child(even) > div { background: #f5f5f5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .alert-box { background: #fff8f8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 0; }
+    .container { width: 100%; max-width: 100%; }
+    .header, .section, .upcoming-section { padding: 16px; }
+    .header h1 { font-size: 1.4rem; }
+    .header-meta { gap: 12px; }
+    .upcoming-grid { grid-template-columns: repeat(2, 1fr); }
+    .vacc-row { grid-template-columns: 1fr; }
+    .vacc-right { text-align: left; }
+    .para-grid { grid-template-columns: 1fr !important; }
+    .para-grid-head { display: none; }
+    .para-row > div { padding: 6px 12px !important; }
+    .header-top { flex-direction: column; }
+  }
+</style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <h1>
+          <span>Canine Health Records</span>
+          Sheru 🦁 Kalra
+        </h1>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="meta-item">
+        <span class="meta-label">Breed <span style="font-size:0.55rem;filter:drop-shadow(0 0 4px rgba(255,200,50,0.9)) brightness(1.4);">🐶</span></span>
+        <span class="meta-value">Norwich Terrier, Male</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Updated Weight</span>
+        <span class="meta-value">10.9 lbs</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Date of Birth</span>
+        <span class="meta-value">January 26, 2026</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Color</span>
+        <span class="meta-value">Red</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Microchip</span>
+        <span class="meta-value">956000019889892</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Record Begins</span>
+        <span class="meta-value">February 9, 2026</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Last Updated</span>
+        <span class="meta-value">June 10, 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Veterinarians -->
+  <div class="section" style="border-radius:0;">
+    <div class="section-title">
+      <div class="icon" style="background:#dbeafe;color:#1e40af;">🏥</div>
+      Veterinarians
+    </div>
+    <div class="section-body">
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+      <div style="border-radius:3px;overflow:hidden;">
+        <div style="background:var(--paper);padding:12px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-weight:600;font-size:1rem;color:var(--ink);font-family:'Playfair Display',serif;">Williamsville Veterinary Hospital</div>
+            <div style="font-size:0.75rem;color:var(--gray);margin-top:2px;">Extraordinary Pets · Exceptional Care</div>
+          </div>
+          <span style="background:var(--green-light);color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:2px;">Primary Vet ✓</span>
+        </div>
+        <div style="padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Address</div>
+            <div style="font-size:0.85rem;color:var(--ink);">5541 Main St<br>Williamsville, NY 14221</div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Phone</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.85rem;color:var(--ink);">(716) 817-8171</div>
+          </div>
+          <div style="grid-column:1/-1;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">After Hours Emergency</div>
+            <div style="font-size:0.85rem;color:var(--ink);">Green Acres Veterinary Center · <span style="font-family:'IBM Plex Mono',monospace;">(716) 694-0122</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    </div>
+  </div>
+
+  <!-- Vet Visit Log -->
+  <div class="section" style="border-radius:0;">
+    <div class="section-title">
+      <div class="icon" style="background:#dbeafe;color:#1e40af;">📋</div>
+      Vet Visit Log
+    </div>
+    <div class="section-body">
+    <div class="para-grid" style="grid-template-columns: 80px 1fr 90px;">
+      <div class="para-grid-head">
+        <div>Date</div>
+        <div>Visit Summary</div>
+        <div>Invoice</div>
+      </div>
+
+      <div class="para-row">
+        <div class="para-date-cell">04/29/26</div>
+        <div>
+        <div style="font-size:0.8rem;color:var(--gray);line-height:1.5;">13w 2d · 6 lbs · DA2PP #2 · Lepto · Lyme · Bordetella · Drontal Plus Dewormer · Bravecto (flea/tick provided) · Sentinel (heartworms/flea provided) · Nail trim<br>Next appt: 05/20/26 — DA2PP Booster #3, Lepto Booster, Lyme Booster</div>
+        </div>
+        <div style="text-align:right;">
+          <span style="background:var(--blue-light);color:var(--blue);font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">#2979836<br>$322.02</span>
+        </div>
+      </div>
+
+      <div class="para-row">
+        <div class="para-date-cell">05/18/26</div>
+        <div>
+        <div style="font-size:0.8rem;color:var(--gray);line-height:1.5;">2nd vet visit · 4m · DA2PP Annual · Leptospirosis Annual · Lyme Annual · Rabies 1yr (IMRAB 3 TF) · Panacur/Fenbendazole dewormer x 3 days · Bravecto 4.4–9.9 lbs (due 06/15/26) · Sentinel Spectrum 2–8 lbs (due 06/15/26) · Vet: Jessica Maxwell, DVM · W.V.H</div>
+        </div>
+        <div style="text-align:right;">
+          <span style="background:var(--blue-light);color:var(--blue);font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">W.V.H</span>
+        </div>
+      </div>
+
+    </div>
+    </div>
+  </div>
+
+  <!-- Vaccinations -->
+  <div class="section" style="border-radius:0;">
+    <div class="section-title">
+      <div class="icon icon-vacc">💉</div>
+      Vaccination History
+    </div>
+    <div class="section-body">
+    <div class="vacc-list">
+
+      <div class="vacc-row">
+        <div class="vacc-left">
+          <div class="vacc-name">NeoPar</div>
+          <div class="vacc-sub">Parvovirus · Modified Live</div>
+        </div>
+        <div class="vacc-right">
+          <div class="vacc-date">03/02/26</div>
+          <div class="vacc-note">Ser. #7333 · Exp. 28 OCT 25</div>
+        </div>
+      </div>
+
+      <div class="vacc-row">
+        <div class="vacc-left">
+          <div class="vacc-name">Nobivac 1-DAPPv</div>
+          <div class="vacc-sub">Distemper · Adenovirus (CAV) · Parainfluenza · Parvovirus</div>
+        </div>
+        <div class="vacc-right">
+          <div class="vacc-date">03/24/26</div>
+          <div class="vacc-note">Nobivac® · MFG 03-2026</div>
+        </div>
+      </div>
+
+      <div class="vacc-row">
+        <div class="vacc-left">
+          <div class="vacc-name">Nobivac 1-DAPPv — Booster #1</div>
+          <div class="vacc-sub">Distemper · Adenovirus (CAV) · Parainfluenza · Parvovirus</div>
+        </div>
+        <div class="vacc-right">
+          <div class="vacc-date">04/01/26</div>
+          <div class="vacc-note">Nobivac® · Modified Live</div>
+        </div>
+      </div>
+
+      <div class="vacc-row">
+        <div class="vacc-left">
+          <div class="vacc-name">DA2PP — Booster #2</div>
+          <div class="vacc-sub">Distemper · Adenovirus · Parainfluenza · Parvovirus · Initial series</div>
+        </div>
+        <div class="vacc-right">
+          <div class="vacc-date">04/29/26</div>
+          <div class="vacc-note">W.V.H Due 05/20/26</div>
+        </div>
+      </div>
+
+      <div class="vacc-row">
+        <div class="vacc-left">
+          <div class="vacc-name">Leptospirosis — Initial</div>
+          <div class="vacc-sub">Leptospira · Initial dose</div>
+        </div>
+        <div class="vacc-right">
+          <div class="vacc-date">04/29/26</div>
+          <div class="vacc-note">W.V.H Due 05/20/26</div>
+        </div>
+      </div>
+
+      <div class="vacc-row">
+        <div class="vacc-left">
+          <div class="vacc-name">Lyme — Initial</div>
+          <div class="vacc-sub">Borrelia burgdorferi · Initial dose</div>
+        </div>
+        <div class="vacc-right">
+          <div class="vacc-date">04/29/26</div>
+          <div class="vacc-note">W.V.H Due 05/20/26</div>
+        </div>
+      </div>
+
+      <div class="vacc-row">
+        <div class="vacc-left">
+          <div class="vacc-name">Bordetella (Kennel Cough)</div>
+          <div class="vacc-sub">Canine Infectious Tracheobronchitis · Package</div>
+        </div>
+        <div class="vacc-right">
+          <div class="vacc-date">04/29/26</div>
+          <div class="vacc-note">W.V.H Due 04/29/27</div>
+        </div>
+      </div>
+
+      <div class="vacc-row">
+        <div class="vacc-left">
+          <div class="vacc-name">DA2PP — Annual</div>
+          <div class="vacc-sub">Distemper · Adenovirus · Parainfluenza · Parvovirus</div>
+        </div>
+        <div class="vacc-right">
+          <div class="vacc-date">05/18/26</div>
+          <div class="vacc-note">W.V.H · Due 05/18/27</div>
+        </div>
+      </div>
+
+      <div class="vacc-row">
+        <div class="vacc-left">
+          <div class="vacc-name">Leptospirosis — Annual</div>
+          <div class="vacc-sub">Leptospira · Annual booster</div>
+        </div>
+        <div class="vacc-right">
+          <div class="vacc-date">05/18/26</div>
+          <div class="vacc-note">W.V.H · Due 05/18/27</div>
+        </div>
+      </div>
+
+      <div class="vacc-row">
+        <div class="vacc-left">
+          <div class="vacc-name">Lyme — Annual</div>
+          <div class="vacc-sub">Borrelia burgdorferi · Annual booster</div>
+        </div>
+        <div class="vacc-right">
+          <div class="vacc-date">05/18/26</div>
+          <div class="vacc-note">W.V.H · Due 05/18/27</div>
+        </div>
+      </div>
+
+      <div class="vacc-row">
+        <div class="vacc-left">
+          <div class="vacc-name">Rabies — 1 Year</div>
+          <div class="vacc-sub">Canine Rabies · IMRAB 3 TF</div>
+        </div>
+        <div class="vacc-right">
+          <div class="vacc-date">05/18/26</div>
+          <div class="vacc-note">W.V.H · Due 05/18/27</div>
+        </div>
+      </div>
+
+    </div>
+    </div>
+  </div>
+  <div class="section" style="border-radius:0;">
+    <div class="section-title">
+      <div class="icon icon-para">🛡</div>
+      Parasite Control History
+    </div>
+    <div class="section-body">
+    <div class="para-grid">
+      <div class="para-grid-head">
+        <div>Date</div>
+        <div>Treatment / Drug</div>
+        <div>Target</div>
+      </div>
+      <div class="para-row">
+        <div class="para-date-cell">02/09/26</div>
+        <div><span class="para-drug">Pyrantel Pamoate</span></div>
+        <div class="para-purpose">Roundworm / Hookworm</div>
+      </div>
+      <div class="para-row">
+        <div class="para-date-cell">02/23/26</div>
+        <div><span class="para-drug">Pyrantel Pamoate</span></div>
+        <div class="para-purpose">Roundworm / Hookworm</div>
+      </div>
+      <div class="para-row">
+        <div class="para-date-cell">03/06/26</div>
+        <div><span class="para-drug">Toltrazuril</span></div>
+        <div class="para-purpose">Coccidia</div>
+      </div>
+      <div class="para-row">
+        <div class="para-date-cell">04/05/26</div>
+        <div><span class="para-drug">Safeguard (Fenbendazole)</span></div>
+        <div class="para-purpose">Roundworm / Giardia</div>
+      </div>
+      <div class="para-row">
+        <div class="para-date-cell">04/06/26</div>
+        <div><span class="para-drug">Safeguard (Fenbendazole)</span> <span style="font-size:0.72rem;color:var(--gray);margin-left:6px;">Day 2</span></div>
+        <div class="para-purpose">Roundworm / Giardia</div>
+      </div>
+      <div class="para-row">
+        <div class="para-date-cell">04/07/26</div>
+        <div><span class="para-drug">Safeguard (Fenbendazole)</span> <span style="font-size:0.72rem;color:var(--gray);margin-left:6px;">Day 3</span></div>
+        <div class="para-purpose">Roundworm / Giardia</div>
+      </div>
+      <div class="para-row">
+        <div class="para-date-cell">04/29/26</div>
+        <div><span class="para-drug">Drontal Plus</span> <span style="font-size:0.72rem;color:var(--gray);margin-left:6px;">Small Dog · per tablet</span></div>
+        <div class="para-purpose">Roundworm / Tapeworm / Hookworm</div>
+      </div>
+      <div class="para-row">
+        <div class="para-date-cell">04/29/26</div>
+        <div><span class="para-drug">Bravecto</span> <span style="font-size:0.72rem;color:var(--gray);margin-left:6px;">4.4–9.9 lbs · 1 month</span></div>
+        <div class="para-purpose">Fleas / Ticks</div>
+      </div>
+      <div class="para-row">
+        <div class="para-date-cell">04/29/26</div>
+        <div><span class="para-drug">Sentinel Spectrum</span> <span style="font-size:0.72rem;color:var(--gray);margin-left:6px;">2–8 lbs</span></div>
+        <div class="para-purpose">Heartworm / Fleas / Intestinal Parasites</div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- Dog Daycare / Boarding -->
+  <div class="section" style="border-radius:0;">
+    <div class="section-title">
+      <div class="icon" style="background:#ede9fe;color:#5b21b6;">🏨</div>
+      Dog Daycare &amp; Boarding
+    </div>
+    <div class="section-body">
+
+    <div style="border-radius:4px;padding:18px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:14px;">
+        <div>
+          <div style="font-weight:600;font-size:1rem;color:var(--ink);font-family:'Playfair Display',serif;">Fetch N' Catch</div>
+          <div style="font-size:0.78rem;color:var(--gray);margin-top:4px;">Bowmansville, NY</div>
+          <div style="margin-top:8px;">
+            <a href="https://maps.app.goo.gl/wgo1CjrH6SVWTTho9" target="_blank" style="font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:#9d174d;text-decoration:none;border-bottom:1px solid #f9a8d4;">Map ↗</a>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Contact</div>
+          <div style="font-size:0.82rem;color:var(--gray);">(716) 901-7618</div>
+          <div style="margin-top:6px;">
+            <a href="https://www.fetchncatch.com" target="_blank" style="font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:#9d174d;text-decoration:none;border-bottom:1px solid #f9a8d4;">fetchncatch.com ↗</a>
+          </div>
+          <div style="margin-top:4px;">
+            <a href="https://fetchncatch.portal.gingrapp.com/#/secure/home" target="_blank" style="font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:#9d174d;text-decoration:none;border-bottom:1px solid #f9a8d4;">Book Services ↗</a>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Status</div>
+          <span style="background:#dcfce7;color:#166534;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">Active</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Services</div>
+        <div style="font-size:0.82rem;color:var(--gray);line-height:1.5;">Dog Daycare · Dog Boarding · Dog Training · Dog Grooming · Safe, fun, and interactive environment · Buffalo's premiere dog daycare facility.</div>
+      </div>
+      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:8px;">Visit Log</div>
+        <div style="display:grid;grid-template-columns:80px 1fr 90px;font-size:0.8rem;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--gray);padding:6px 0;">06/09/26</div>
+          <div style="padding:6px 10px;color:var(--ink);">First trial day — Sheru was awesome according to the instructors. We will go back!</div>
+          <div style="padding:6px 0;">
+            <span style="background:#dcfce7;color:#166534;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">⭐ Excellent</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    </div>
+  </div>
+
+  <!-- Groomers -->
+  <div class="section" style="border-radius:0;">
+    <div class="section-title">
+      <div class="icon" style="background:#fce7f3;color:#9d174d;">✂</div>
+      Groomers
+    </div>
+    <div class="section-body">
+
+    <!-- Appointments -->
+    <div style="margin-bottom:24px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:#9d174d;font-weight:500;margin-bottom:12px;">Upcoming Appointments</div>
+
+      <!-- Table header -->
+      <div style="display:grid;grid-template-columns:100px 1fr 80px 100px;background:var(--paper-dark,#f5f5f0);border:1px solid var(--border);border-bottom:none;border-radius:3px 3px 0 0;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);padding:8px 12px;">Date &amp; Time</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);padding:8px 12px;">Location</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);padding:8px 12px;text-align:center;">Map</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);padding:8px 12px;">Status</div>
+      </div>
+
+      <!-- Row 1 -->
+      <div style="display:grid;grid-template-columns:100px 1fr 80px 100px;border:1px solid var(--border);border-bottom:none;align-items:start;">
+        <div style="padding:12px;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:var(--ink);font-weight:600;">05/07/26</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--gray);margin-top:4px;">3:00 PM</div>
+        </div>
+        <div style="padding:12px;">
+          <div style="font-size:0.85rem;font-weight:600;color:var(--ink);">Nothing But Fluff, LLC</div>
+          <div style="font-size:0.78rem;color:var(--gray);margin-top:3px;">855 Niagara Falls Blvd</div>
+          <div style="font-size:0.78rem;color:var(--gray);">Amherst</div>
+          <div style="font-size:0.78rem;color:var(--gray);">(716) 247-1202</div>
+          <div style="font-size:0.75rem;color:var(--gray);margin-top:6px;">Sm Puppy Intro Groom · $54.38</div>
+        </div>
+        <div style="padding:12px;text-align:center;display:flex;align-items:center;justify-content:center;">
+          <a href="https://maps.google.com/?q=855+Niagara+Falls+Blvd+Amherst+NY" target="_blank" style="text-decoration:none;color:#9d174d;" title="Open in Google Maps"><i class="ti ti-route" style="font-size:20px;"></i></a>
+        </div>
+        <div style="padding:12px;">
+          <span style="background:#dcfce7;color:#166534;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">Completed</span>
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div style="display:grid;grid-template-columns:100px 1fr 80px 100px;border:1px solid var(--border);border-radius:0 0 3px 3px;align-items:start;">
+        <div style="padding:12px;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:var(--ink);font-weight:600;">06/30/26</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--gray);margin-top:4px;">2:15 PM</div>
+        </div>
+        <div style="padding:12px;">
+          <div style="font-size:0.85rem;font-weight:600;color:var(--ink);">Fur</div>
+          <div style="font-size:0.78rem;color:var(--gray);margin-top:3px;">128 Columbia Blvd</div>
+          <div style="font-size:0.78rem;color:var(--gray);">Kenmore, NY 14217</div>
+        </div>
+        <div style="padding:12px;text-align:center;display:flex;align-items:center;justify-content:center;">
+          <a href="https://maps.google.com/?q=128+Columbia+Blvd+Kenmore+NY+14217" target="_blank" style="text-decoration:none;color:#9d174d;" title="Open in Google Maps"><i class="ti ti-route" style="font-size:20px;"></i></a>
+        </div>
+        <div style="padding:12px;">
+          <span style="background:#fef9c3;color:#854d0e;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">Scheduled</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+      <!-- Nothing But Fluff -->
+      <div style="border-radius:3px;overflow:hidden;">
+        <div style="background:var(--paper);padding:12px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-weight:600;font-size:1rem;color:var(--ink);font-family:'Playfair Display',serif;">Nothing But Fluff</div>
+            <div style="font-size:0.75rem;color:var(--gray);margin-top:2px;">Full-Service Pet Grooming Salon · Dogs &amp; Cats</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span style="background:#fce7f3;color:#9d174d;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:2px;">⭐ 4.9 / 5</span>
+            <span style="background:var(--green-light);color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:2px;">Wire Coat Friendly</span>
+          </div>
+        </div>
+        <div style="padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Address</div>
+            <div style="font-size:0.85rem;color:var(--ink);">855 Niagara Falls Blvd<br>Amherst, NY 14226</div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Phone</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.85rem;color:var(--ink);">(716) 247-1202</div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Website</div>
+            <div style="font-size:0.85rem;"><a href="https://nothingbutfluff716.com" target="_blank" style="color:var(--blue);text-decoration:none;">nothingbutfluff716.com</a></div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Booking</div>
+            <div style="font-size:0.85rem;"><a href="https://nothingbutfluffllc.groomore.com" target="_blank" style="color:var(--blue);text-decoration:none;">Online via GrooMore</a></div>
+          </div>
+          <div style="grid-column:1/-1;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Services</div>
+            <div style="font-size:0.82rem;color:var(--ink);">Full grooms · Bath &amp; brush · Walk-in nail trims · Cat grooming · Hand stripping (confirm availability)</div>
+          </div>
+          <div style="grid-column:1/-1;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Notes</div>
+            <div style="font-size:0.82rem;color:var(--gray);line-height:1.5;">3 groomers on staff · 10+ years experience · Specializes in anxious, elderly, and first-time grooms · Works at the pet's pace · Donates services to local fosters.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Laundromutt -->
+      <div style="border-radius:3px;overflow:hidden;">
+        <div style="background:var(--paper);padding:12px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-weight:600;font-size:1rem;color:var(--ink);font-family:'Playfair Display',serif;">The Laundromutt</div>
+            <div style="font-size:0.75rem;color:var(--gray);margin-top:2px;">Full-Service Grooming · Self-Service Wash · Daycare</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span style="background:var(--blue-light);color:var(--blue);font-family:'IBM Plex Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:2px;">Master Groomer on Staff</span>
+            <span style="background:var(--green-light);color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:2px;">Self-Wash Available</span>
+          </div>
+        </div>
+        <div style="padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Address</div>
+            <div style="font-size:0.85rem;color:var(--ink);">2964 Delaware Ave<br>Kenmore, NY 14217</div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Phone</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.85rem;color:var(--ink);">(716) 768-4004</div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Website</div>
+            <div style="font-size:0.85rem;"><a href="https://buffalolaundromutt.com" target="_blank" style="color:var(--blue);text-decoration:none;">buffalolaundromutt.com</a></div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Hours</div>
+            <div style="font-size:0.82rem;color:var(--ink);">Mon–Fri 11am–7pm<br>Sat 9am–7pm · Sun 12–7pm</div>
+          </div>
+          <div style="grid-column:1/-1;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Services</div>
+            <div style="font-size:0.82rem;color:var(--ink);">Full grooms · Self-service wash · Nail trim · Teeth cleaning · Doggie daycare</div>
+          </div>
+          <div style="grid-column:1/-1;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Notes</div>
+            <div style="font-size:0.82rem;color:var(--gray);line-height:1.5;">Only certified Master Groomer in Buffalo · All services include bath, brush-out, nail clip &amp; ear cleaning · By appointment for full grooms · Self-wash is walk-in, no time limit.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fur Buffalo -->
+      <div style="border-radius:4px;padding:18px;margin-bottom:14px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:14px;">
+          <div>
+            <div style="font-weight:600;font-size:1rem;color:var(--ink);font-family:'Playfair Display',serif;">Für Buffalo</div>
+            <div style="font-size:0.78rem;color:var(--gray);margin-top:4px;">128 Columbia Blvd</div>
+            <div style="font-size:0.78rem;color:var(--gray);">Kenmore, NY 14217</div>
+            <div style="margin-top:8px;">
+              <a href="https://maps.google.com/?q=128+Columbia+Blvd+Kenmore+NY+14217" target="_blank" style="font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:#9d174d;text-decoration:none;border-bottom:1px solid #f9a8d4;">Map ↗</a>
+            </div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Contact</div>
+            <div style="font-size:0.82rem;color:var(--gray);">Mobile grooming salon</div>
+            <div style="margin-top:6px;">
+              <a href="https://www.furbuffalo.com" target="_blank" style="font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:#9d174d;text-decoration:none;border-bottom:1px solid #f9a8d4;">furbuffalo.com ↗</a>
+            </div>
+            <div style="margin-top:4px;">
+              <a href="https://instagram.com/furbuffalo" target="_blank" style="font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:#9d174d;text-decoration:none;border-bottom:1px solid #f9a8d4;">@furbuffalo ↗</a>
+            </div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Status</div>
+            <span style="background:#fef9c3;color:#854d0e;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">Active</span>
+          </div>
+        </div>
+        <div style="grid-column:1/-1;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Notes</div>
+          <div style="font-size:0.82rem;color:var(--gray);line-height:1.5;">Buffalo's premier mobile pet grooming salon · Services dogs, cats, rabbits, and ferrets · Highest trained stylists in WNY · Grooming prices based on hourly rate · Specializes in show trims and breed standards.</div>
+        </div>
+      </div>
+
+    </div>
+    </div>
+  </div>
+
+  <!-- Socialization & Activity Log -->
+  <div class="section" style="border-radius:0;">
+    <div class="section-title">
+      <div class="icon" style="background:#e0f2fe;color:#0369a1;">🐾</div>
+      Milestones &amp; Activity Log
+    </div>
+    <div class="section-body">
+    <div class="para-grid" style="grid-template-columns: 80px 160px 1fr 90px;">
+      <div class="para-grid-head">
+        <div>Date</div>
+        <div>Event</div>
+        <div>Notes</div>
+        <div>Rating</div>
+      </div>
+
+      <div class="para-row">
+        <div class="para-date-cell">04/15/26</div>
+        <div style="font-weight:600;font-size:0.85rem;color:var(--ink);padding:10px 14px;">Came home from the breeder</div>
+        <div style="font-size:0.8rem;color:var(--gray);line-height:1.5;padding:10px 14px;">Sheru was picked up from BERIC Norwich Terriers (Nancy Nosiglia) and brought home to Amherst, NY. First day in his forever home.</div>
+        <div style="text-align:right;padding:6px 10px;white-space:nowrap;">
+          <span style="background:#fef9c3;color:#854d0e;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">🏠 Milestone</span>
+        </div>
+      </div>
+
+      <div class="para-row">
+        <div class="para-date-cell">04/20/26</div>
+        <div style="font-weight:600;font-size:0.85rem;color:var(--ink);padding:10px 14px;">Potty training &amp; name recognition</div>
+        <div style="font-size:0.8rem;color:var(--gray);line-height:1.5;padding:10px 14px;">Sheru has learned to use the pee/potty patch on the deck consistently. Also showing strong early recognition of his name — responding well when called.</div>
+        <div style="text-align:right;padding:6px 10px;white-space:nowrap;">
+          <span style="background:#fef9c3;color:#854d0e;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">🏠 Milestone</span>
+        </div>
+      </div>
+
+      <div class="para-row">
+        <div class="para-date-cell">04/26/26</div>
+        <div style="font-weight:600;font-size:0.85rem;color:var(--ink);padding:10px 14px;">First visit to grandparents' house</div>
+        <div style="font-size:0.8rem;color:var(--gray);line-height:1.5;padding:10px 14px;">Behaved excellently throughout the visit. Guests arrived with a child and a Maltipoo — Sheru played well with the child and enthusiastically chased the Maltipoo everywhere. Calm, confident, and social all day.</div>
+        <div style="text-align:right;padding:6px 10px;white-space:nowrap;">
+          <span style="background:var(--green-light);color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">⭐ Excellent</span>
+        </div>
+      </div>
+
+      <div class="para-row">
+        <div class="para-date-cell">04/29/26</div>
+        <div style="font-weight:600;font-size:0.85rem;color:var(--ink);padding:10px 14px;">Post-vaccine reaction</div>
+        <div style="font-size:0.8rem;color:var(--gray);line-height:1.5;padding:10px 14px;">Immediate vomiting, diarrhea, and lethargy following 5 vaccines + 3 treatments at Williamsville Vet Hospital. Leptospirosis likely the trigger. Recovered same evening — back to chewing bully sticks. Note for 05/20/26 visit: inform vet, consider pre-medicating with Benadryl and splitting vaccines across two visits.</div>
+        <div style="text-align:right;padding:6px 10px;white-space:nowrap;">
+          <span style="background:#fee2e2;color:#991b1b;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">⚠ Reaction</span>
+        </div>
+      </div>
+
+      <div class="para-row">
+        <div class="para-date-cell">05/07/26</div>
+        <div style="font-weight:600;font-size:0.85rem;color:var(--ink);padding:10px 14px;">First grooming experience</div>
+        <div style="font-size:0.8rem;color:var(--gray);line-height:1.5;padding:10px 14px;">Sheru had his first professional groom at Nothing But Fluff, LLC. A routine puppy intro groom — bath, blow dry, nail trim, and getting used to being handled. He did great throughout.</div>
+        <div style="text-align:right;padding:6px 10px;white-space:nowrap;">
+          <span style="background:#dcfce7;color:#166534;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">⭐ Excellent</span>
+        </div>
+      </div>
+
+      <div class="para-row">
+        <div class="para-date-cell">05/10/26</div>
+        <div style="font-weight:600;font-size:0.85rem;color:var(--ink);padding:10px 14px;">Sit & Down commands</div>
+        <div style="font-size:0.8rem;color:var(--gray);line-height:1.5;padding:10px 14px;">Strong conception of both Sit and Down (lie). Also beginning to understand deflection of thought — redirecting Sheru's focus as a behavior management tool.</div>
+        <div style="text-align:right;padding:6px 10px;white-space:nowrap;">
+          <span style="background:#dcfce7;color:#166534;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">⭐ Excellent</span>
+        </div>
+      </div>
+
+      <div class="para-row">
+        <div class="para-date-cell">05/18/26</div>
+        <div style="font-weight:600;font-size:0.85rem;color:var(--ink);padding:10px 14px;">Fully vaccinated</div>
+        <div style="font-size:0.8rem;color:var(--gray);line-height:1.5;padding:10px 14px;">Sheru is fully up to date on all vaccinations and cleared for all activities — daycare, boarding, training, socialization, and public spaces. Neutering pending.</div>
+        <div style="text-align:right;padding:6px 10px;white-space:nowrap;">
+          <span style="background:#dcfce7;color:#166534;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">🏠 Milestone</span>
+        </div>
+      </div>
+
+      <div class="para-row">
+        <div class="para-date-cell">05/20/26</div>
+        <div style="font-weight:600;font-size:0.85rem;color:var(--ink);padding:10px 14px;">First dog sitter</div>
+        <div style="font-size:0.8rem;color:var(--gray);line-height:1.5;padding:10px 14px;">Sheru was cared for by Miss Hilda for the first time. A great experience with his first independent stay away from the Kalra family.</div>
+        <div style="text-align:right;padding:6px 10px;white-space:nowrap;">
+          <span style="background:#fef9c3;color:#854d0e;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">🏠 Milestone</span>
+        </div>
+      </div>
+
+      <div class="para-row">
+        <div class="para-date-cell">05/26/26</div>
+        <div style="font-weight:600;font-size:0.85rem;color:var(--ink);padding:10px 14px;">Sheru turns 4 months</div>
+        <div style="font-size:0.8rem;color:var(--gray);line-height:1.5;padding:10px 14px;">Happy 4 months, Sheru! A growing, curious, and spirited Norwich Terrier.</div>
+        <div style="text-align:right;padding:6px 10px;white-space:nowrap;">
+          <span style="background:#fef9c3;color:#854d0e;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">🏠 Milestone</span>
+        </div>
+      </div>
+
+      <div class="para-row">
+        <div class="para-date-cell">06/09/26</div>
+        <div style="font-weight:600;font-size:0.85rem;color:var(--ink);padding:10px 14px;">First dog daycare</div>
+        <div style="font-size:0.8rem;color:var(--gray);line-height:1.5;padding:10px 14px;">Sheru had his first trial day at Fetch N' Catch in Bowmansville. The instructors said he was awesome. We will be going back!</div>
+        <div style="text-align:right;padding:6px 10px;white-space:nowrap;">
+          <span style="background:#dcfce7;color:#166534;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">⭐ Excellent</span>
+        </div>
+      </div>
+
+      <div class="para-row">
+        <div class="para-date-cell">06/26/26</div>
+        <div style="font-weight:600;font-size:0.85rem;color:var(--ink);padding:10px 14px;">Sheru turns 5 months</div>
+        <div style="font-size:0.8rem;color:var(--gray);line-height:1.5;padding:10px 14px;">Happy 5 months, Sheru! Growing stronger, bolder, and more spirited every day.</div>
+        <div style="text-align:right;padding:6px 10px;white-space:nowrap;">
+          <span style="background:#fef9c3;color:#854d0e;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">🏠 Milestone</span>
+        </div>
+      </div>
+
+      <div class="para-row">
+        <div class="para-date-cell">06/26/26</div>
+        <div style="font-weight:600;font-size:0.85rem;color:var(--ink);padding:10px 14px;">First visit to Barkology</div>
+        <div style="font-size:0.8rem;color:var(--gray);line-height:1.5;padding:10px 14px;">Sheru's first visit to Barkology — he was the king. Conquered the agility table, mingled with the pack, and even jumped into the kiddie pool. Pure confidence.</div>
+        <div style="text-align:right;padding:6px 10px;white-space:nowrap;">
+          <span style="background:#dcfce7;color:#166534;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">⭐ Excellent</span>
+        </div>
+      </div>
+
+    </div>
+    </div>
+  </div>
+
+  <!-- Parks & Fun -->
+  <div class="section" style="border-radius:0;">
+    <div class="section-title">
+      <div class="icon" style="background:#fef9c3;color:#854d0e;">🐾</div>
+      Parks &amp; Fun
+    </div>
+    <div class="section-body">
+
+    <div style="border-radius:4px;padding:18px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;">
+        <div>
+          <div style="font-weight:600;font-size:1rem;color:var(--ink);font-family:'Playfair Display',serif;">Barkology</div>
+          <div style="font-size:0.78rem;color:var(--gray);margin-top:3px;">4939 Genesee St</div>
+          <div style="font-size:0.78rem;color:var(--gray);">Cheektowaga, NY 14225</div>
+          <div style="margin-top:8px;">
+            <a href="https://maps.google.com/?q=4939+Genesee+St+Cheektowaga+NY+14225" target="_blank" style="font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:#9d174d;text-decoration:none;border-bottom:1px solid #f9a8d4;">Map ↗</a>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Contact</div>
+          <div style="font-size:0.82rem;color:var(--gray);">(716) 810-9003</div>
+          <div style="font-size:0.78rem;color:var(--gray);margin-top:2px;">Barkology716@gmail.com</div>
+          <div style="margin-top:6px;">
+            <a href="https://www.barkology716.com" target="_blank" style="font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:#9d174d;text-decoration:none;border-bottom:1px solid #f9a8d4;">barkology716.com ↗</a>
+          </div>
+          <div style="margin-top:4px;">
+            <a href="https://instagram.com/barkology716" target="_blank" style="font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:#9d174d;text-decoration:none;border-bottom:1px solid #f9a8d4;">@barkology716 ↗</a>
+          </div>
+        </div>
+      </div>
+      <div style="margin-bottom:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">Hours</div>
+        <div style="font-size:0.78rem;color:var(--gray);line-height:1.6;">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--ink);">Mon</span> · Closed &nbsp;|&nbsp;
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--ink);">Tue–Thu</span> · 3:00–9:00 PM &nbsp;|&nbsp;
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--ink);">Fri</span> · 3:00–10:00 PM &nbsp;|&nbsp;
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--ink);">Sat</span> · 12:00–10:00 PM &nbsp;|&nbsp;
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--ink);">Sun</span> · 12:00–8:00 PM
+        </div>
+      </div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:4px;">About</div>
+        <div style="font-size:0.82rem;color:var(--gray);line-height:1.5;">Buffalo's first and only indoor/outdoor dog park and bar · Indoor &amp; outdoor play yards · Bar with beer, cocktails &amp; wine · Wednesdays are small dog only (25 lbs or less) · Proof of rabies, distemper &amp; Bordetella required · $18 day pass · Monthly &amp; annual passes available.</div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:8px;">Visit Log</div>
+        <div style="display:grid;grid-template-columns:80px 1fr 90px;font-size:0.8rem;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--gray);padding:6px 0;">06/26/26</div>
+          <div style="padding:6px 10px;color:var(--ink);">First visit — Sheru was the king. Conquered the agility table, mingled with the pack, and jumped into the kiddie pool.</div>
+          <div style="padding:6px 0;">
+            <span style="background:#dcfce7;color:#166534;font-family:'IBM Plex Mono',monospace;font-size:0.58rem;letter-spacing:0.04em;padding:3px 6px;border-radius:2px;display:inline-block;white-space:nowrap;">⭐ Excellent</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    </div>
+  </div>
+
+  <!-- Puppy Kindergarten -->
+  <div class="section" style="border-radius:0;">
+    <div class="section-title">
+      <div class="icon" style="background:#dcfce7;color:#166534;">🎓</div>
+      Puppy Kindergarten
+    </div>
+    <div class="section-body">
+
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:10px;">Class info</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+
+      <div style="border-radius:3px;padding:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px;">School</div>
+        <p style="font-size:0.85rem;color:var(--ink);line-height:1.6;margin:0;"><strong>Canine Academy Inc.</strong><br>9270 Main St, Clarence NY<br>716-759-9406</p>
+      </div>
+
+      <div style="border-radius:3px;padding:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px;">Schedule</div>
+        <p style="font-size:0.85rem;color:var(--ink);line-height:1.6;margin:0;">Starts <strong>May 6, 2026</strong><br>Tuesdays · 7:15 PM<br>4-class series</p>
+      </div>
+
+    </div>
+
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:10px;">Class log</div>
+    <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:6px 8px;font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);font-weight:400;">Class</th>
+          <th style="text-align:left;padding:6px 8px;font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);font-weight:400;">Date</th>
+          <th style="text-align:left;padding:6px 8px;font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);font-weight:400;">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:7px 8px;">1</td><td style="padding:7px 8px;">May 6</td><td style="padding:7px 8px;color:var(--gray);">—</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:7px 8px;">2</td><td style="padding:7px 8px;">May 13</td><td style="padding:7px 8px;color:var(--gray);">—</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:7px 8px;">3</td><td style="padding:7px 8px;">May 20</td><td style="padding:7px 8px;color:var(--gray);">—</td></tr>
+        <tr><td style="padding:7px 8px;">4</td><td style="padding:7px 8px;">May 27</td><td style="padding:7px 8px;color:var(--gray);">—</td></tr>
+      </tbody>
+    </table>
+
+    </div>
+  </div>
+
+  <!-- Bite Management & Teething -->
+  <div class="section" style="border-radius:0;">
+    <div class="section-title">
+      <div class="icon" style="background:#fee2e2;color:#991b1b;">🦷</div>
+      Bite Management
+    </div>
+    <div class="section-body">
+
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:10px;">Context</div>
+    <p style="font-size:0.85rem;color:var(--ink);line-height:1.6;margin:0 0 20px;">Normal behavior at 13 weeks — peak teething and mouthing phase. Norwich Terriers are tenacious by nature; expect improvement by 4–5 months with consistent redirection. Other puppies teach bite inhibition better than humans can — puppy socialization classes are strongly recommended.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+
+      <div style="border-radius:3px;padding:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:8px;">Redirect immediately</div>
+        <p style="font-size:0.82rem;color:var(--ink);line-height:1.5;margin:0;">Say "ouch" or "no" firmly (not loudly), stop all interaction, and hand him a chew toy instead. Every single time — consistency is everything.</p>
+      </div>
+
+      <div style="border-radius:3px;padding:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:8px;">The "dead fish" technique</div>
+        <p style="font-size:0.82rem;color:var(--ink);line-height:1.5;margin:0;">Go completely limp and boring — no reaction, no eye contact, no movement. Terriers bite for engagement; remove the fun and he learns biting = nothing happens.</p>
+      </div>
+
+      <div style="border-radius:3px;padding:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:8px;">Time outs</div>
+        <p style="font-size:0.82rem;color:var(--ink);line-height:1.5;margin:0;">If redirecting isn't working, calmly place him in his crate or pen for 60 seconds. Not punishment — just a reset. Return neutral, no drama.</p>
+      </div>
+
+      <div style="border-radius:3px;padding:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:8px;">Best chew toys</div>
+        <p style="font-size:0.82rem;color:var(--ink);line-height:1.5;margin:0;">Bully sticks · Rubber Kong (stuffed with peanut butter or kibble) · Frozen wet washcloth (soothes gums) · Nylabone Puppy (small breed size)</p>
+      </div>
+
+    </div>
+
+    <div style="border:1px solid #fca5a5;background:#fff5f5;border-radius:3px;padding:14px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:#991b1b;margin-bottom:8px;">What NOT to do</div>
+      <p style="font-size:0.82rem;color:var(--ink);line-height:1.6;margin:0;">Do not tap his nose or scruff him — can backfire with terriers and create fear or defensiveness. Do not roughhouse with hands — teaches him hands are toys. Do not yell — ramps up his energy.</p>
+    </div>
+
+    </div>
+  </div>
+
+  <!-- Clicker Training -->
+  <div class="section" style="border-radius:0;">
+    <div class="section-title">
+      <div class="icon" style="background:#ede9fe;color:#5b21b6;">🎯</div>
+      Clicker Training
+    </div>
+    <div class="section-body">
+
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:10px;">How it works</div>
+    <p style="font-size:0.85rem;color:var(--ink);line-height:1.6;margin:0 0 20px;">Click = marks the exact moment of correct behavior. Treat follows within 2 seconds. The click is the signal, not the reward. <strong>Never click without treating.</strong> Currently working: Sit ✓</p>
+
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:10px;">Commands — in order</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+
+      <div style="border-radius:3px;padding:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);">1. Name recognition</div>
+          <span style="background:var(--green-light);color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:0.6rem;padding:2px 7px;border-radius:2px;">In progress</span>
+        </div>
+        <p style="font-size:0.82rem;color:var(--ink);line-height:1.5;margin:0;">Say "Sheru" — the moment he looks at you, click + treat. 10 reps, twice a day. Foundation for every other command.</p>
+      </div>
+
+      <div style="border-radius:3px;padding:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);">2. Watch me</div>
+          <span style="background:var(--blue-light);color:var(--blue);font-family:'IBM Plex Mono',monospace;font-size:0.6rem;padding:2px 7px;border-radius:2px;">Next up</span>
+        </div>
+        <p style="font-size:0.82rem;color:var(--ink);line-height:1.5;margin:0;">Hold treat to your eye, say "watch me" — the moment his eyes meet yours, click + treat. Critical for focus and recall.</p>
+      </div>
+
+      <div style="border-radius:3px;padding:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px;">3. Down</div>
+        <p style="font-size:0.82rem;color:var(--ink);line-height:1.5;margin:0;">From sit, hold treat at his nose and slowly lower to the ground. The moment his elbows hit the floor — click + treat. Do not push him down physically.</p>
+      </div>
+
+      <div style="border-radius:3px;padding:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px;">4. Stay</div>
+        <p style="font-size:0.82rem;color:var(--ink);line-height:1.5;margin:0;">Ask for sit, wait 1 second, click + treat. Add one second at a time. Build to 10 seconds before adding distance. Takes weeks — be patient.</p>
+      </div>
+
+      <div style="border-radius:3px;padding:14px;grid-column:1/-1;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px;">5. Leave it</div>
+        <p style="font-size:0.82rem;color:var(--ink);line-height:1.5;margin:0;">Put a treat in your closed fist. When he stops pawing/nosing and backs off — click + treat <em>from your other hand</em>. Essential for safety.</p>
+      </div>
+
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+      <div style="border:1px solid var(--border);background:var(--green-light);border-radius:3px;padding:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);margin-bottom:8px;">Session guidelines · 13 weeks</div>
+        <p style="font-size:0.82rem;color:var(--ink);line-height:1.6;margin:0;">3–5 minutes max per session · End on a win (something he knows) · 2–3 sessions per day beats one long one · Train before meals when motivated</p>
+      </div>
+
+      <div style="border:1px solid #fca5a5;background:#fff5f5;border-radius:3px;padding:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:#991b1b;margin-bottom:8px;">Not yet</div>
+        <p style="font-size:0.82rem;color:var(--ink);line-height:1.6;margin:0;">Heel / leash walking — wait until vaccines complete · Come/recall — introduce soon but don't proof until 4–5 months · Off-leash work outside</p>
+      </div>
+
+    </div>
+
+    </div>
+  </div>
+
+  <!-- Overtired Puppy Behavior -->
+  <div class="section" style="border-radius:0 0 4px 4px;">
+    <div class="section-title">
+      <div class="icon" style="background:#fef9c3;color:#854d0e;">😴</div>
+      Overtired Puppy
+    </div>
+    <div class="section-body">
+
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:10px;">What's happening</div>
+    <p style="font-size:0.85rem;color:var(--ink);line-height:1.6;margin:0 0 20px;">Norwich Terriers hit a wall fast and go into overdrive instead of slowing down — zoomies and biting are him signaling "I'm exhausted." Puppies need <strong>18–20 hours of sleep per day</strong> at this stage. When out too long they get overstimulated and can't self-regulate.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+
+      <div style="border-radius:3px;padding:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px;">Rule of thumb</div>
+        <p style="font-size:0.82rem;color:var(--ink);line-height:1.5;margin:0;">5 minutes of activity per month of age, then rest. At 3 months = <strong>~15 minutes max</strong> before he needs a nap.</p>
+      </div>
+
+      <div style="border-radius:3px;padding:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px;">Signs he's hit his limit</div>
+        <p style="font-size:0.82rem;color:var(--ink);line-height:1.5;margin:0;">Zoomies · Biting escalating · Ignoring commands he knows · Frantic unfocused energy · Whining</p>
+      </div>
+
+      <div style="border-radius:3px;padding:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px;">When you see it happening</div>
+        <p style="font-size:0.82rem;color:var(--ink);line-height:1.5;margin:0;">Calmly pick him up — no fuss — and put him in the pen or crate. Don't wait for it to escalate. Zoomies = he's already past his threshold.</p>
+      </div>
+
+      <div style="border-radius:3px;padding:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);margin-bottom:6px;">Keep pen time positive</div>
+        <p style="font-size:0.82rem;color:var(--ink);line-height:1.5;margin:0;">Always leave a Kong or chew toy in the pen so it stays a calm, positive space — not a punishment zone.</p>
+      </div>
+
+    </div>
+
+    <div style="border:1px solid var(--border);background:var(--green-light);border-radius:3px;padding:14px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);margin-bottom:8px;">Daily rotation · 13 weeks</div>
+      <p style="font-size:0.82rem;color:var(--ink);line-height:1.6;margin:0;">Out of pen → <strong>15 min</strong> active time → back in pen for a nap → repeat through the day. Consistent rotation prevents overtiredness from building up.</p>
+    </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Sheru's DOB: Jan 26, 2026
+    const dob = new Date('2026-01-26');
+    const today = new Date();
+
+    // Find next 6-month milestone from DOB
+    let next = new Date(dob);
+    while (next <= today) {
+      next.setMonth(next.getMonth() + 6);
+    }
+
+    const diff = Math.ceil((next - today) / (1000 * 60 * 60 * 24));
+    const opts = { month: 'short', day: 'numeric', year: 'numeric' };
+    const el = document.getElementById('countdown');
+    if (el) el.textContent = next.toLocaleDateString('en-US', opts) + ' · ' + diff + ' days away';
+  </script>
+
+
+  <div class="footer">
+    Last Updated · June 10, 2026
+  </div>
+
+</div>
+  <script>
+    document.querySelectorAll('.section-title').forEach(title => {
+      // Add chevron
+      const chevron = document.createElement('span');
+      chevron.className = 'chevron';
+      chevron.textContent = '▼';
+      title.appendChild(chevron);
+
+      title.addEventListener('click', () => {
+        const body = title.nextElementSibling;
+        if (!body || !body.classList.contains('section-body')) return;
+        const isOpen = body.classList.toggle('open');
+        title.classList.toggle('open', isOpen);
+      });
+    });
+  </script>
+</body>
+</html>
